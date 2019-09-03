@@ -1,2 +1,7 @@
-# Console-Minesweeper
-Minesweeper, redesigned for your console window! (Windows only)
+# Console Minesweeper
+Minesweeper, redesigned for your console window!
+
+Designed for Windows OS only.
+
+
+More info coming soon!
