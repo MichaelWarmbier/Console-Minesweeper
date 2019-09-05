@@ -24,7 +24,7 @@ private:
 	int InputY = 0;
 	int Flags = 0;
 	int MineChance;
-	const int indent = 2 * 16 + 8;
+	int indent;
 	const int GSS = 16;
 	random_device generator;
 
@@ -44,7 +44,7 @@ private:
 
 		0,64, // Frown Tile / 13
 		16,64, // Cool Tile / 14
-		32,32, // O / 15 ````
+		128,0, // Chosen Mine Tile / 15
 		48,32, // R / 16 ````
 		64,32, // D / 17 ````
 		80,32, // S / 18 ````
@@ -76,21 +76,23 @@ private:
 		112,48, // Selected Tile 8 / 41 
 	};
 public:
-	void SetConsoleSize(int x, int y);
+	bool EXIT_MS = false;
+	void SetConsoleSize();
 	void DrawBoard() {
 		int FlagsLocated = 0;
+		int UnopenedTiles = 0;
 		for (int y = 0; y < Dimensions; y++) {
 			for (int x = 0; x < Dimensions; x++) {
 				if (MapTop[y][x] == 0)
 					if (y == InputY && x == InputX)
-						DrawSprite(GetSelAlt(MapBottom[y][x]), indent + x * GSS, indent + GSS + y * GSS);
+						DrawSprite(GetSelAlt(MapBottom[y][x]), indent + x * GSS, 32 + GSS + y * GSS);
 					else
-						DrawSprite(MapBottom[y][x], indent + x * GSS, indent + GSS + y * GSS);
+						DrawSprite(MapBottom[y][x], indent + x * GSS, 32 + GSS + y * GSS);
 				else
 					if (y == InputY && x == InputX)
-						DrawSprite(GetSelAlt(MapTop[y][x]) , indent + x * GSS, indent + GSS + y * GSS);
+						DrawSprite(GetSelAlt(MapTop[y][x]) , indent + x * GSS, 32 + GSS + y * GSS);
 					else
-						DrawSprite(MapTop[y][x], indent + x * GSS, indent + GSS + y * GSS);
+						DrawSprite(MapTop[y][x], indent + x * GSS, 32 + GSS + y * GSS);
 				switch (GameState) {
 				case NONE:
 					DrawSprite(2, indent + (Dimensions * GSS / 2) - (GSS / 2), GSS);
@@ -104,8 +106,12 @@ public:
 				}
 				if (MapTop[y][x] == 21 || MapTop[y][x] == 24)
 					FlagsLocated++;
+				if (MapTop[y][x] == 1 || MapTop[y][x] == 21 || MapTop[y][x] == 23 || MapTop[y][x] == 24)
+					UnopenedTiles++;
 			}
 		}
+		if (UnopenedTiles == NumberOfMines)
+			GameState = WIN;
 		Flags = FlagsLocated;
 		DrawNumber(NumberOfMines - Flags);
 	}
@@ -119,54 +125,68 @@ public:
 		DrawSprite(Digits[1] + 3, indent + (Dimensions * GSS / 2) - (GSS / 2) - (2 * GSS), GSS);
 	}
 	void InputBoard() {
-		if (KeyIsDown('A', true, false))
-			InputX--;
-		if (KeyIsDown('D', true, false))
-			InputX++;
-		if (KeyIsDown('W', true, false))
-			InputY--;
-		if (KeyIsDown('S', true, false))
-			InputY++;
-		if (KeyIsDown(13, true, false)) {
-			MapTop[InputY][InputX] = 0;
-			if (MapBottom[InputY][InputX] == 20) {
-				ClearAdjacentTiles(InputX, InputY);
-				ClearAdjacentNumber();
+		if (GameState == NONE) {
+			if (KeyIsDown('A', true, false))
+				InputX--;
+			if (KeyIsDown('D', true, false))
+				InputX++;
+			if (KeyIsDown('W', true, false))
+				InputY--;
+			if (KeyIsDown('S', true, false))
+				InputY++;
+			if (KeyIsDown(13, true, false)) {
+				MapTop[InputY][InputX] = 0;
+				if (MapBottom[InputY][InputX] == 20) {
+					ClearAdjacentTiles(InputX, InputY);
+					ClearAdjacentNumber();
+				}
 			}
-		}
-		if (KeyIsDown('F', true, false) && MapTop[InputY][InputX] != 0) {
-			if (MapTop[InputY][InputX] != 21 && MapTop[InputY][InputX] != 0)
-				MapTop[InputY][InputX] = 21;
-			else
-				MapTop[InputY][InputX] = 1;
+			if (KeyIsDown('F', true, false) && MapTop[InputY][InputX] != 0) {
+				if (MapTop[InputY][InputX] != 21 && MapTop[InputY][InputX] != 0)
+					MapTop[InputY][InputX] = 21;
+				else
+					MapTop[InputY][InputX] = 1;
+			}
 		}
 	}
 	void LogicBoard() {
 		// Set Bounds
-		if (InputX < 0)
-			InputX = 0;
-		else if (InputX > Dimensions - 1)
-			InputX = Dimensions - 1;
-		if (InputY < 0)
-			InputY = 0;
-		else if (InputY > Dimensions - 1)
-			InputY = Dimensions - 1;
-		if (CheckForLossAndWin() == 1)
-			GameState = LOSS;
-		else if (CheckForLossAndWin() == 2)
-			GameState = WIN;
-	}
-	void InitializeObject(int d, int n) {
-		NumberOfMines = n;
-		Dimensions = d;
+		if (GameState == NONE) {
+			if (InputX < 0)
+				InputX = 0;
+			else if (InputX > Dimensions - 1)
+				InputX = Dimensions - 1;
+			if (InputY < 0)
+				InputY = 0;
+			else if (InputY > Dimensions - 1)
+				InputY = Dimensions - 1;
+			if (CheckForLoss() && GameState != WIN)
+				GameState = LOSS;
+		}
+		if (GameState == LOSS || GameState == WIN) {
+			ClearTopMap();
+			MapBottom[InputX][InputY] = 15;
+			DrawBoard();
+			EXIT_MS = true;
+		}
 	}
 	MineSweeper() { 
 		NumberOfMines = 10; Dimensions = 12; MapTop = new int* [Dimensions];  MapBottom = new int* [Dimensions]; MineChance = NumberOfMines * 2;
+		indent = (15 - (Dimensions / 2)) * 16;
 		for (int i = 0; i < Dimensions; i++) {
 			MapTop[i] = new int[Dimensions];
 			MapBottom[i] = new int[Dimensions];
 		}
-		SetConsoleSize(Dimensions + 4, Dimensions + 6);
+		SetConsoleSize();
+	};
+	MineSweeper(int n, int d) {
+		NumberOfMines = n; Dimensions = d; MapTop = new int* [Dimensions];  MapBottom = new int* [Dimensions]; MineChance = NumberOfMines * 2;
+		indent = (15 - (Dimensions / 2)) * 16;
+		for (int i = 0; i < Dimensions; i++) {
+			MapTop[i] = new int[Dimensions];
+			MapBottom[i] = new int[Dimensions];
+		}
+		SetConsoleSize();
 	};
 	~MineSweeper() {
 		for (int i = 0; i < Dimensions; i++) {
@@ -175,20 +195,22 @@ public:
 		}
 		delete[] MapTop; delete[] MapBottom;
 	}
-	int CheckForLossAndWin() {
-		bool CanLose = false;
+	int CheckForLoss() {
 		for (int y = 0; y < Dimensions; y++) {
 			for (int x = 0; x < Dimensions; x++) {
 				if (MapTop[y][x] == 0)
 					if (MapBottom[y][x] == 25)
 						return 1;
-				if (MapTop[y][x] != 0)
-					CanLose = true;
 			}
 		}
-		if (!CanLose)
-			return 2;
 		return 0;
+	}
+	void ClearTopMap() {
+		for (int y = 0; y < Dimensions; y++) {
+			for (int x = 0; x < Dimensions; x++) {
+				MapTop[y][x] = 0;
+			}
+		}
 	}
 	void ClearAdjacentNumber() {
 		for (int y = 0; y < Dimensions; y++) {
@@ -201,6 +223,14 @@ public:
 					if (x - 1 >= 0 && MapTop[y][x - 1] == 0 && MapBottom[y][x - 1] == 20)
 						MapTop[y][x] = 0;
 					if (x + 1 < Dimensions && MapTop[y][x + 1] == 0 && MapBottom[y][x + 1] == 20)
+						MapTop[y][x] = 0;
+					if (x + 1 < Dimensions && y - 1 >= 0 && MapTop[y - 1][x + 1] == 0 && MapBottom[y - 1][x + 1] == 20)
+						MapTop[y][x] = 0;
+					if (x + 1 < Dimensions && y + 1 < Dimensions && MapTop[y + 1][x + 1] == 0 && MapBottom[y + 1][x + 1] == 20)
+						MapTop[y][x] = 0;
+					if (x - 1 >= 0 && y - 1 >= 0 && MapTop[y - 1][x - 1] == 0 && MapBottom[y - 1][x - 1] == 20)
+						MapTop[y][x] = 0;
+					if (x - 1 >= 0 && y + 1 < Dimensions && MapTop[y + 1][x - 1] == 0 && MapBottom[y + 1][x - 1] == 20)
 						MapTop[y][x] = 0;
 				}
 			}
@@ -320,17 +350,19 @@ public:
 };
 
 int main() {
-	bool EXIT_MS = false, EXIT_PROGRAM = false;
-	MineSweeper Board[4];
-	Board[0].InitializeObject(10, 8); // Add more
+	bool EXIT_PROGRAM = 1;
+	MineSweeper* Board = new MineSweeper(99, 20);
 	int i = 0;
 	do {
-		Board[i].InitializeBoard();
+		Board->InitializeBoard();
 		do {
-			Board[i].DrawBoard();
-			Board[i].InputBoard();
-			Board[i].LogicBoard();
-		} while (!EXIT_MS);
+			Board->DrawBoard();
+			Board->InputBoard();
+			Board->LogicBoard();
+			ShowConsoleCursor(false);
+		} while (!Board->EXIT_MS);
+		Sleep(2000);
+		delete Board;
 	} while (!EXIT_PROGRAM);
 	return 0;
 }
@@ -350,7 +382,7 @@ bool KeyIsDown(char key, bool pressed, bool held) {
 	return (pressed && (keyState & 1)) || (held && (keyState & 0xA000));
 }
 
-void MineSweeper::SetConsoleSize(int x, int y) {
+void MineSweeper::SetConsoleSize() {
 	HWND console = GetConsoleWindow();
 	HMONITOR monitor = MonitorFromWindow(console, MONITOR_DEFAULTTOPRIMARY);
 
@@ -371,7 +403,7 @@ void MineSweeper::SetConsoleSize(int x, int y) {
 	double horzScale = ((double)cxPhysical / (double)cxLogical);
 	double vertScale = ((double)cyPhysical / (double)cyLogical);
 
-	SetWindowPos(console, HWND_TOP, 0, 0, double(x * 16.0 + 2.0) / horzScale + 4, double(y * 16.0) / vertScale, SWP_NOMOVE); // Resize without moving where the console window was placed
+	SetWindowPos(console, HWND_TOP, 0, 0, double(480) / horzScale + 4, double(480) / vertScale, SWP_NOMOVE); // Resize without moving where the console window was placed
 
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO info;
@@ -381,5 +413,4 @@ void MineSweeper::SetConsoleSize(int x, int y) {
 		info.srWindow.Bottom - info.srWindow.Top + 1
 	};
 	SetConsoleScreenBufferSize(handle, new_size);
-	ShowConsoleCursor(false);
 }
