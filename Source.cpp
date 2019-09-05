@@ -22,8 +22,9 @@ private:
 	int Dimensions;
 	int InputX = 0;
 	int InputY = 0;
+	int Flags = 0;
 	int MineChance;
-	const int indent = 2 * 16;
+	const int indent = 2 * 16 + 8;
 	const int GSS = 16;
 	random_device generator;
 
@@ -77,6 +78,7 @@ private:
 public:
 	void SetConsoleSize(int x, int y);
 	void DrawBoard() {
+		int FlagsLocated = 0;
 		for (int y = 0; y < Dimensions; y++) {
 			for (int x = 0; x < Dimensions; x++) {
 				if (MapTop[y][x] == 0)
@@ -100,8 +102,21 @@ public:
 					DrawSprite(13, indent + (Dimensions * GSS / 2) - (GSS / 2), GSS);
 					break;
 				}
+				if (MapTop[y][x] == 21 || MapTop[y][x] == 24)
+					FlagsLocated++;
 			}
 		}
+		Flags = FlagsLocated;
+		DrawNumber(NumberOfMines - Flags);
+	}
+	void DrawNumber(int num) {
+		int Digits[2] = { 0,0 };
+		if (num < 100) {
+			Digits[0] = num / 10;
+			Digits[1] = num % 10;
+		}
+		DrawSprite(Digits[0] + 3, indent + (Dimensions * GSS / 2) - (GSS / 2) - (3 * GSS), GSS);
+		DrawSprite(Digits[1] + 3, indent + (Dimensions * GSS / 2) - (GSS / 2) - (2 * GSS), GSS);
 	}
 	void InputBoard() {
 		if (KeyIsDown('A', true, false))
@@ -112,10 +127,19 @@ public:
 			InputY--;
 		if (KeyIsDown('S', true, false))
 			InputY++;
-		if (KeyIsDown(13, true, false))
+		if (KeyIsDown(13, true, false)) {
 			MapTop[InputY][InputX] = 0;
-		if (KeyIsDown('F', true, false) && MapTop[InputY][InputX] != 0)
-			MapTop[InputY][InputX] = 21;
+			if (MapBottom[InputY][InputX] == 20) {
+				ClearAdjacentTiles(InputX, InputY);
+				ClearAdjacentNumber();
+			}
+		}
+		if (KeyIsDown('F', true, false) && MapTop[InputY][InputX] != 0) {
+			if (MapTop[InputY][InputX] != 21 && MapTop[InputY][InputX] != 0)
+				MapTop[InputY][InputX] = 21;
+			else
+				MapTop[InputY][InputX] = 1;
+		}
 	}
 	void LogicBoard() {
 		// Set Bounds
@@ -132,13 +156,17 @@ public:
 		else if (CheckForLossAndWin() == 2)
 			GameState = WIN;
 	}
+	void InitializeObject(int d, int n) {
+		NumberOfMines = n;
+		Dimensions = d;
+	}
 	MineSweeper() { 
-		NumberOfMines = 10; Dimensions = 8; MapTop = new int* [Dimensions];  MapBottom = new int* [Dimensions]; MineChance = NumberOfMines * 2;
+		NumberOfMines = 10; Dimensions = 12; MapTop = new int* [Dimensions];  MapBottom = new int* [Dimensions]; MineChance = NumberOfMines * 2;
 		for (int i = 0; i < Dimensions; i++) {
 			MapTop[i] = new int[Dimensions];
 			MapBottom[i] = new int[Dimensions];
 		}
-		SetConsoleSize(Dimensions + 4, Dimensions + 13);
+		SetConsoleSize(Dimensions + 4, Dimensions + 6);
 	};
 	~MineSweeper() {
 		for (int i = 0; i < Dimensions; i++) {
@@ -161,6 +189,37 @@ public:
 		if (!CanLose)
 			return 2;
 		return 0;
+	}
+	void ClearAdjacentNumber() {
+		for (int y = 0; y < Dimensions; y++) {
+			for (int x = 0; x < Dimensions; x++) {
+				if (MapTop[y][x] != 0 && MapBottom[y][x] != 20 && MapBottom[y][x] != 25) {
+					if (y - 1 >= 0 && MapTop[y - 1][x] == 0 && MapBottom[y - 1][x] == 20)
+						MapTop[y][x] = 0;
+					if (y + 1 < Dimensions && MapTop[y + 1][x] == 0 && MapBottom[y + 1][x] == 20)
+						MapTop[y][x] = 0;
+					if (x - 1 >= 0 && MapTop[y][x - 1] == 0 && MapBottom[y][x - 1] == 20)
+						MapTop[y][x] = 0;
+					if (x + 1 < Dimensions && MapTop[y][x + 1] == 0 && MapBottom[y][x + 1] == 20)
+						MapTop[y][x] = 0;
+				}
+			}
+		}
+	}
+	void ClearAdjacentTiles(int x, int y) {
+		MapTop[y][x] = 0;
+		if (y - 1 >= 0 && MapBottom[y - 1][x] == 20 && MapTop[y - 1][x] != 0) {
+			ClearAdjacentTiles(x, y - 1);
+		}
+		if (y + 1 < Dimensions && MapBottom[y + 1][x] == 20 && MapTop[y + 1][x] != 0) {
+			ClearAdjacentTiles(x, y + 1);
+		}
+		if (x - 1 >= 0 && MapBottom[y][x - 1] == 20 && MapTop[y][x - 1] != 0) {
+			ClearAdjacentTiles(x - 1, y);
+		}
+		if (x + 1 < Dimensions && MapBottom[y][x + 1] == 20 && MapTop[y][x + 1] != 0) {
+			ClearAdjacentTiles(x + 1, y);
+		}
 	}
 	void InitializeBoard() {
 		uniform_int_distribution<int> distribution(1, MineChance);
@@ -262,13 +321,15 @@ public:
 
 int main() {
 	bool EXIT_MS = false, EXIT_PROGRAM = false;
+	MineSweeper Board[4];
+	Board[0].InitializeObject(10, 8); // Add more
+	int i = 0;
 	do {
-		MineSweeper Board;
-		Board.InitializeBoard();
+		Board[i].InitializeBoard();
 		do {
-			Board.DrawBoard();
-			Board.InputBoard();
-			Board.LogicBoard();
+			Board[i].DrawBoard();
+			Board[i].InputBoard();
+			Board[i].LogicBoard();
 		} while (!EXIT_MS);
 	} while (!EXIT_PROGRAM);
 	return 0;
@@ -310,7 +371,7 @@ void MineSweeper::SetConsoleSize(int x, int y) {
 	double horzScale = ((double)cxPhysical / (double)cxLogical);
 	double vertScale = ((double)cyPhysical / (double)cyLogical);
 
-	SetWindowPos(console, HWND_TOP, 0, 0, double(x * 16.0) / horzScale + 4, double(y * 16.0) / vertScale, SWP_NOMOVE); // Resize without moving where the console window was placed
+	SetWindowPos(console, HWND_TOP, 0, 0, double(x * 16.0 + 2.0) / horzScale + 4, double(y * 16.0) / vertScale, SWP_NOMOVE); // Resize without moving where the console window was placed
 
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO info;
