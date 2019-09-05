@@ -16,6 +16,8 @@ Current Version: Version 1.0
 
 Installation can be done direction via the installers provided in the **Installers** folder. Alternatively, you can compile the code yourself and acompany the executable output with the sprite sheet. 
 
+If Windows prevents startup claiming to have protected your PC, please press more info and then Run Anyway to continue. This program was made with C++ and compiled using visual studio, it's external files include a .ico and .bmp file. 
+
 ## Differences From Original
 
 The game functions the complete same as Minesweeper. 
