@@ -10,12 +10,7 @@ Designed for Windows OS only.
 
 ## Version
 
-Current Version: Version Beta 1.0
-
-Intented Additions:
-
-* Difficulty selection
-* Quick reset
+Current Version: Version 1.0
 
 ## How To Install
 
