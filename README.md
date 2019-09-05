@@ -4,4 +4,14 @@ Minesweeper, redesigned for your console window!
 Designed for Windows OS only.
 
 
-More info coming soon!
+## How To Install
+
+Coming Soon!
+
+## Differences From Original
+
+Coming Soon!
+
+## Why Console?
+
+Coming Soon!
