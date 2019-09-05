@@ -1,7 +1,7 @@
 # Console Minesweeper
 
 
-![image](https://user-images.githubusercontent.com/44079959/64353111-2eae5b00-cfcb-11e9-990e-81d0f0832ef1.png)
+![image](https://user-images.githubusercontent.com/44079959/64381362-05102680-d001-11e9-8e60-8b7c178b8daf.png)
 
 
 Minesweeper, redesigned for your console window!
@@ -29,9 +29,11 @@ Cells are selected via keyboard input rather than the standard pointer. In addit
 
 ## Controls
 
-WSAD - Movement (Arrow Keys TBI)
+WSAD / Arrow Keys - Movement 
 F - Flag
 Enter - Reveal Cell
+R - Reset Board
+ESC - Exit Board
 
 ## Instructions
 
