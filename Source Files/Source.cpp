@@ -6,28 +6,205 @@
 #include <chrono>
 using namespace std;
 using namespace chrono;
+bool EXIT_PROGRAM = false;
 
 HDC console = GetDC(GetConsoleWindow());
 HDC hdc = CreateCompatibleDC(NULL);
 HBITMAP bmap = (HBITMAP)LoadImage(NULL, _T("ConsoleMinesweeperSpriteSheet.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-enum state {WIN, LOSS, NONE};
+enum state {WIN, LOSS, UNDC};
+enum input {UP, DOWN, START, NONE};
 
 void ShowConsoleCursor(bool flag);
+void SetConsoleSize();
 bool KeyIsDown(char key, bool pressed, bool held);
 double Wait(double WaitTime);
 double GetTimeSince(double StartTime);
 double GetTime();
 
+bool EXIT_MENU = false;
+int SelDimensions = 0;
+int SelMines = 0;
+
+class Menu {
+private:
+	input PlayerInput = NONE;
+	const int GSS = 16;
+	int os;
+	const int SpritePositions[19][2]{
+		0,80, // A / 1
+		16,80, // B / 2
+		32,80, // D / 3
+		48,80, // E / 4
+		64,80, // G / 5
+		80,80, // I / 6
+		96,80, // M / 7
+		128,80, // P / 8
+		144,80, // R / 9
+		0,96, // T / 10
+		16,96, // X / 11
+		64,96, // S / 12
+		80,96, // W / 13
+		32,96, // Left Bracket / 14
+		48,96, // Right BRacket / 15
+		112,80, // N / 16
+
+		0,64, // Frown Tile / 17
+		16,0, // Smile Tile / 18
+
+		96,96, // Empty Sprite / 19
+	};
+public:
+	Menu() {
+		os = 1;
+	}
+	void DrawMenu() {
+		DrawSprite(18, (20 / 2) - 2, 7);
+		DrawSprite(7, (20 / 2) - 1 , 7);
+		DrawSprite(6, (20 / 2), 7);
+		DrawSprite(16, (20 / 2) + 1, 7);
+		DrawSprite(4, (20 / 2) + 2, 7);
+
+		DrawSprite(12, (20 / 2) + 5, 7);
+		DrawSprite(13, (20 / 2) + 6, 7);
+		DrawSprite(4, (20 / 2) + 7, 7);
+		DrawSprite(4, (20 / 2) + 8, 7);
+		DrawSprite(8, (20 / 2) + 9, 7);
+		DrawSprite(4, (20 / 2) + 10, 7);
+		DrawSprite(9, (20 / 2) + 11, 7);
+		DrawSprite(17, (20 / 2) + 12, 7);
+
+		if (os == 1) {
+			DrawSprite(14, (20 / 2), 11);
+			DrawSprite(15, (20 / 2) + 9, 11);
+		}
+		else {
+			DrawSprite(19, (20 / 2), 11);
+			DrawSprite(19, (20 / 2) + 9, 11);
+		}
+		DrawSprite(2, (20 / 2) + 1, 11);
+		DrawSprite(4, (20 / 2) + 2, 11);
+		DrawSprite(5, (20 / 2) + 3, 11);
+		DrawSprite(6, (20 / 2) + 4, 11);
+		DrawSprite(16, (20 / 2) + 5, 11);
+		DrawSprite(16, (20 / 2) + 6, 11);
+		DrawSprite(4, (20 / 2) + 7, 11);
+		DrawSprite(9, (20 / 2) + 8, 11);
+
+		if (os == 2) {
+			DrawSprite(14, (20 / 2) - 2, 13);
+			DrawSprite(15, (20 / 2) + 11, 13);
+		}
+		else {
+			DrawSprite(19, (20 / 2) - 2, 13);
+			DrawSprite(19, (20 / 2) + 11, 13);
+		}
+		DrawSprite(6, (20 / 2) - 1, 13);
+		DrawSprite(16, (20 / 2), 13);
+		DrawSprite(10, (20 / 2) + 1, 13);
+		DrawSprite(4, (20 / 2) + 2, 13);
+		DrawSprite(9, (20 / 2) + 3, 13);
+		DrawSprite(7, (20 / 2) + 4, 13);
+		DrawSprite(4, (20 / 2) + 5, 13);
+		DrawSprite(3, (20 / 2) + 6, 13);
+		DrawSprite(6, (20 / 2) + 7, 13);
+		DrawSprite(1, (20 / 2) + 8, 13);
+		DrawSprite(10, (20 / 2) + 9, 13);
+		DrawSprite(4, (20 / 2) + 10, 13);
+
+		if (os == 3) {
+			DrawSprite(14, (20 / 2) + 1, 15);
+			DrawSprite(15, (20 / 2) + 8, 15);
+		}
+		else {
+			DrawSprite(19, (20 / 2) + 1, 15);
+			DrawSprite(19, (20 / 2) + 8, 15);
+		}
+		DrawSprite(4, (20 / 2) + 2, 15);
+		DrawSprite(11, (20 / 2) + 3, 15);
+		DrawSprite(8, (20 / 2) + 4, 15);
+		DrawSprite(4, (20 / 2) + 5, 15);
+		DrawSprite(9, (20 / 2) + 6, 15);
+		DrawSprite(10, (20 / 2) + 7, 15);
+
+		if (os == 4) {
+			DrawSprite(14, (20 / 2) + 2, 17);
+			DrawSprite(15, (20 / 2) + 7, 17);
+		}
+		else {
+			DrawSprite(19, (20 / 2) + 2, 17);
+			DrawSprite(19, (20 / 2) + 7, 17);
+		}
+		DrawSprite(4, (20 / 2) + 3, 17);
+		DrawSprite(11, (20 / 2) + 4, 17);
+		DrawSprite(6, (20 / 2) + 5, 17);
+		DrawSprite(10, (20 / 2) + 6, 17);
+
+	}
+	void InputMenu() {
+		PlayerInput = NONE;
+		if (KeyIsDown('W', true, false) || KeyIsDown(38, true, false))
+			PlayerInput = UP;
+		if (KeyIsDown('S', true, false) || KeyIsDown(40, true, false))
+			PlayerInput = DOWN;
+		if (KeyIsDown(13, true, false))
+			PlayerInput = START;
+	}
+	void LogicMenu() {
+		switch (PlayerInput) {
+		case UP:
+			os--;
+			break;
+		case DOWN:
+			os++;
+			break;
+		case START:
+			switch (os) {
+			case 1:
+				SelDimensions = 10;
+				SelMines = 8;
+				EXIT_MENU = true;
+				break;
+			case 2:
+				SelDimensions = 15;
+				SelMines = 40;
+				EXIT_MENU = true;
+				break;
+			case 3:
+				SelDimensions = 20;
+				SelMines = 66;
+				EXIT_MENU = true;
+				break;
+			case 4:
+				SelDimensions = 20;
+				SelMines = 1;
+				EXIT_PROGRAM = true;
+				EXIT_MENU = true;
+				break;
+			}
+			break;
+		}
+		if (os > 4)
+			os = 4;
+		if (os < 1)
+			os = 1;
+	}
+	void DrawSprite(int ArrPos, int x, int y) {
+		SelectObject(hdc, bmap);
+		BitBlt(console, x * GSS, y * GSS, GSS, GSS, hdc, SpritePositions[ArrPos - 1][0], SpritePositions[ArrPos - 1][1], SRCCOPY);
+		DeleteObject(bmap);
+	}
+};
+
 class MineSweeper {
 private:
 	bool FirstInput = false;
-	state GameState = NONE;
+	state GameState = UNDC;
 	int** MapTop;
 	int** MapBottom;
 	int NumberOfMines;
 	int Dimensions;
-	int InputX = 0;
-	int InputY = 0;
+	int InputX;
+	int InputY;
 	int Flags = 0;
 	double SecondTS = 0;
 	int Time = 0;
@@ -35,7 +212,7 @@ private:
 	const int GSS = 16;
 	random_device generator;
 
-	const int SpritePositions[41][2]{
+	const int SpritePositions[43][2]{
 		0,0, // Unchecked Tile / 1
 		16,0, // Smile Tile / 2
 		0,16, // Regular 0 / 3
@@ -52,10 +229,10 @@ private:
 		0,64, // Frown Tile / 13
 		16,64, // Cool Tile / 14
 		128,0, // Chosen Mine Tile / 15
-		48,32, // R / 16 ````
-		64,32, // D / 17 ````
-		80,32, // S / 18 ````
-		96,32, // : / 19 ````
+		48,64, // Vertical Border Tile / 16
+		32,64, // Horizontal Border Tile / 17
+		64,64, // Top Left Border Tile / 18
+		80,64, // Bottom Right Border Tile / 19
 
 		32,0, // Blank Tile / 20
 		48,0, // Flag Tile / 21
@@ -81,10 +258,13 @@ private:
 		80,48, // Selected Tile 6 / 39
 		96,48, // Selected Tile 7 / 40 
 		112,48, // Selected Tile 8 / 41 
+
+		96,64, // Top Right Border Tile / 42
+		112,64, // Bottom Left Border Tile / 43
 	};
 public:
 	bool EXIT_MS = false;
-	void SetConsoleSize();
+	bool ForceReset = false;
 	void DrawBoard() {
 		int FlagsLocated = 0;
 		int UnopenedTiles = 0;
@@ -92,16 +272,16 @@ public:
 			for (int x = 0; x < Dimensions; x++) {
 				if (MapTop[y][x] == 0)
 					if (y == InputY && x == InputX)
-						DrawSprite(GetSelAlt(MapBottom[y][x]), indent + x * GSS, 32 + GSS + y * GSS);
+						DrawSprite(GetSelAlt(MapBottom[y][x]), indent + x * GSS, 48 + GSS + y * GSS);
 					else
-						DrawSprite(MapBottom[y][x], indent + x * GSS, 32 + GSS + y * GSS);
+						DrawSprite(MapBottom[y][x], indent + x * GSS, 48 + GSS + y * GSS);
 				else
 					if (y == InputY && x == InputX)
-						DrawSprite(GetSelAlt(MapTop[y][x]) , indent + x * GSS, 32 + GSS + y * GSS);
+						DrawSprite(GetSelAlt(MapTop[y][x]) , indent + x * GSS, 48 + GSS + y * GSS);
 					else
-						DrawSprite(MapTop[y][x], indent + x * GSS, 32 + GSS + y * GSS);
+						DrawSprite(MapTop[y][x], indent + x * GSS, 48 + GSS + y * GSS);
 				switch (GameState) {
-				case NONE:
+				case UNDC:
 					DrawSprite(2, indent + (Dimensions * GSS / 2) - (GSS / 2), GSS);
 					break;
 				case WIN:
@@ -117,6 +297,7 @@ public:
 					UnopenedTiles++;
 			}
 		}
+		DrawBorder();
 		if (UnopenedTiles == NumberOfMines)
 			GameState = WIN;
 		Flags = FlagsLocated;
@@ -124,6 +305,24 @@ public:
 			Flags = NumberOfMines;
 		DrawNumber(NumberOfMines - Flags, -4);
 		DrawNumber(Time, 2);
+	}
+	void DrawBorder() {
+		for (int y = 0; y < Dimensions + 2; y++) {
+			for (int x = 0; x < Dimensions + 2; x++) {
+				if ((x == 0 || x == Dimensions + 1) && (y > 0 && y < Dimensions + 1))
+					DrawSprite(16, indent - GSS + x * GSS, 32 + GSS + y * GSS);
+				if ((y == 0 || y == Dimensions + 1) && (x > 0 && x < Dimensions + 1))
+					DrawSprite(17, indent - GSS + x * GSS, 32 + GSS + y * GSS);
+				if (x == 0 && y == 0)
+					DrawSprite(18, indent - GSS + x * GSS, 32 + GSS + y * GSS);
+				if (x == Dimensions + 1 && y == Dimensions + 1)
+					DrawSprite(19, indent - GSS + x * GSS, 32 + GSS + y * GSS);
+				if (x == Dimensions + 1 && y == 0)
+					DrawSprite(42, indent - GSS + x * GSS, 32 + GSS + y * GSS);
+				if (x == 0 && y == Dimensions + 1)
+					DrawSprite(43, indent - GSS + x * GSS, 32 + GSS + y * GSS);
+			}
+		}
 	}
 	void DrawNumber(int num, int xPos) {
 		int Digits[3] = { 0,0,0 };
@@ -139,15 +338,24 @@ public:
 		DrawSprite(Digits[2] + 3, indent + (Dimensions * GSS / 2) - (GSS / 2) + ((xPos + 2) * GSS), GSS);
 	}
 	void InputBoard() {
-		if (GameState == NONE) {
-			if (KeyIsDown('A', true, false))
+		if (GameState == UNDC) {
+			if (KeyIsDown('A', true, false) || KeyIsDown(37, true, false))
 				InputX--;
-			if (KeyIsDown('D', true, false))
+			if (KeyIsDown('D', true, false) || KeyIsDown(39, true, false))
 				InputX++;
-			if (KeyIsDown('W', true, false))
+			if (KeyIsDown('W', true, false) || KeyIsDown(38, true, false))
 				InputY--;
-			if (KeyIsDown('S', true, false))
+			if (KeyIsDown('S', true, false) || KeyIsDown(40, true, false))
 				InputY++;
+			if (KeyIsDown(27, true, false)) {
+				EXIT_MENU = false;
+				EXIT_MS = true;
+				ForceReset = true;
+			}
+			if (KeyIsDown('R', true, false)) {
+				EXIT_MS = true;
+				ForceReset = true;
+			}
 			if (KeyIsDown(13, true, false)) {
 				FirstInput = true;
 				MapTop[InputY][InputX] = 0;
@@ -167,7 +375,7 @@ public:
 	}
 	void LogicBoard() {
 		// Set Bounds
-		if (GameState == NONE) {
+		if (GameState == UNDC) {
 			if (InputX < 0)
 				InputX = 0;
 			else if (InputX > Dimensions - 1)
@@ -180,13 +388,13 @@ public:
 				GameState = LOSS;
 		}
 		if (GameState == LOSS || GameState == WIN) {
-			ClearTopMap();
+			RevealMines();
 			if (GameState == LOSS)
 				MapBottom[InputY][InputX] = 15;
 			DrawBoard();
 			EXIT_MS = true;
 		}
-		if (GetTimeSince(SecondTS) > 1.0 && FirstInput && GameState == NONE) {
+		if (GetTimeSince(SecondTS) > 1.0 && FirstInput && GameState == UNDC) {
 			Time++;
 			SecondTS = GetTime();
 		}
@@ -195,11 +403,13 @@ public:
 	}
 	MineSweeper() { 
 		NumberOfMines = 10; Dimensions = 12; MapTop = new int* [Dimensions];  MapBottom = new int* [Dimensions];
+		indent = (15 - (Dimensions / 2)) * 16;
 		for (int i = 0; i < Dimensions; i++) {
 			MapTop[i] = new int[Dimensions];
 			MapBottom[i] = new int[Dimensions];
 		}
-		SetConsoleSize();
+		InputX = Dimensions / 2;
+		InputY = Dimensions / 2;
 	};
 	MineSweeper(int n, int d) {
 		NumberOfMines = n; Dimensions = d; MapTop = new int* [Dimensions];  MapBottom = new int* [Dimensions];
@@ -208,7 +418,10 @@ public:
 			MapTop[i] = new int[Dimensions];
 			MapBottom[i] = new int[Dimensions];
 		}
-		SetConsoleSize();
+		InputX = Dimensions / 2;
+		InputY = Dimensions / 2;
+		if (NumberOfMines < 2)
+			ForceReset = true;
 	};
 	~MineSweeper() {
 		for (int i = 0; i < Dimensions; i++) {
@@ -227,10 +440,12 @@ public:
 		}
 		return 0;
 	}
-	void ClearTopMap() {
+	void RevealMines() {
 		for (int y = 0; y < Dimensions; y++) {
 			for (int x = 0; x < Dimensions; x++) {
-				MapTop[y][x] = 0;
+				if (MapBottom[y][x] == 25) {
+					MapTop[y][x] = 0;
+				}
 			}
 		}
 	}
@@ -345,13 +560,17 @@ public:
 			NULL;
 		if (KeyIsDown('F', true, false))
 			NULL;
-		if (KeyIsDown('W', true, false))
+		if (KeyIsDown('W', true, false) || KeyIsDown(38, true, false))
 			NULL;
-		if (KeyIsDown('A', true, false))
+		if (KeyIsDown('A', true, false) || KeyIsDown(40, true, false))
 			NULL;
-		if (KeyIsDown('S', true, false))
+		if (KeyIsDown('S', true, false) || KeyIsDown(37, true, false))
 			NULL;
-		if (KeyIsDown('D', true, false))
+		if (KeyIsDown('D', true, false) || KeyIsDown(39, true, false))
+			NULL;
+		if (KeyIsDown('R', true, false))
+			NULL;
+		if (KeyIsDown(27, true, false))
 			NULL;
 	}
 	int GetSelAlt(int spriteID) {
@@ -390,21 +609,34 @@ public:
 ////////////////////////////////////////////////////////////
 int main() {
 	system("Title Console Minesweeper");
-	bool EXIT_PROGRAM = 0;
+	system("color 70");
+	SetConsoleSize();
+	ShowConsoleCursor(false);
 	do {
-		MineSweeper* Board = new MineSweeper(8, 10);
+		Menu* Main = new Menu;
+		do {
+			Main->DrawMenu();
+			Main->InputMenu();
+			Main->LogicMenu();
+			while (GetConsoleWindow() != GetForegroundWindow()) {}
+		} while (!EXIT_MENU);
+		MineSweeper* Board = new MineSweeper(SelMines, SelDimensions);
+		delete Main;
+		system("CLS");
 		Board->InitializeBoard();
 		Board->ClearInputBuffer();
-		do {
+		while (!Board->EXIT_MS && !EXIT_PROGRAM) {
 			Board->DrawBoard();
 			Board->InputBoard();
 			Board->LogicBoard();
-			ShowConsoleCursor(false);
 			while (GetConsoleWindow() != GetForegroundWindow()) {}
-		} while (!Board->EXIT_MS);
-		KeyIsDown(NULL, true, true);
-		Sleep(2000);
+		}
+		if (!Board->ForceReset)
+			Wait(2.5);
+		else if (!Board->EXIT_MS)
+			EXIT_MENU = true;
 		delete Board;
+		system("CLS");
 	} while (!EXIT_PROGRAM);
 	return 0;
 }
@@ -423,8 +655,7 @@ bool KeyIsDown(char key, bool pressed, bool held) {
 	int keyState = GetAsyncKeyState(static_cast<int>(key));
 	return (pressed && (keyState & 1)) || (held && (keyState & 0xA000));
 }
-
-void MineSweeper::SetConsoleSize() {
+void SetConsoleSize() {
 	HWND console = GetConsoleWindow();
 	HMONITOR monitor = MonitorFromWindow(console, MONITOR_DEFAULTTOPRIMARY);
 
@@ -445,7 +676,7 @@ void MineSweeper::SetConsoleSize() {
 	double horzScale = ((double)cxPhysical / (double)cxLogical);
 	double vertScale = ((double)cyPhysical / (double)cyLogical);
 
-	SetWindowPos(console, HWND_TOP, 0, 0, double(480) / horzScale + 4, double(480) / vertScale, SWP_NOMOVE); // Resize without moving where the console window was placed
+	SetWindowPos(console, HWND_TOP, 0, 0, double(490.0) / horzScale + 4, double(480.0) / vertScale, SWP_NOMOVE); // Resize without moving where the console window was placed
 
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO info;
