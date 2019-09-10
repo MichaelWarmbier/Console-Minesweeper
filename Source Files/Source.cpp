@@ -14,6 +14,9 @@ HBITMAP bmap = (HBITMAP)LoadImage(NULL, _T("ConsoleMinesweeperSpriteSheet.bmp"),
 enum state {WIN, LOSS, UNDC};
 enum input {UP, DOWN, START, NONE};
 
+double FPS = 1.0 / 60.0;
+double timer = 0, dt = 0;
+
 void ShowConsoleCursor(bool flag);
 void SetConsoleSize();
 bool KeyIsDown(char key, bool pressed, bool held);
@@ -556,21 +559,21 @@ public:
 			return 0;
 	}
 	void ClearInputBuffer() {
-		if (KeyIsDown(13, true, false))
+		if (KeyIsDown(13, true, true))
 			NULL;
-		if (KeyIsDown('F', true, false))
+		if (KeyIsDown('F', true, true))
 			NULL;
-		if (KeyIsDown('W', true, false) || KeyIsDown(38, true, false))
+		if (KeyIsDown('W', true, true) || KeyIsDown(38, true, false))
 			NULL;
-		if (KeyIsDown('A', true, false) || KeyIsDown(40, true, false))
+		if (KeyIsDown('A', true, true) || KeyIsDown(40, true, false))
 			NULL;
-		if (KeyIsDown('S', true, false) || KeyIsDown(37, true, false))
+		if (KeyIsDown('S', true, true) || KeyIsDown(37, true, false))
 			NULL;
-		if (KeyIsDown('D', true, false) || KeyIsDown(39, true, false))
+		if (KeyIsDown('D', true, true) || KeyIsDown(39, true, false))
 			NULL;
-		if (KeyIsDown('R', true, false))
+		if (KeyIsDown('R', true, true))
 			NULL;
-		if (KeyIsDown(27, true, false))
+		if (KeyIsDown(27, true, true))
 			NULL;
 	}
 	int GetSelAlt(int spriteID) {
@@ -619,13 +622,13 @@ int main() {
 			Main->InputMenu();
 			Main->LogicMenu();
 			while (GetConsoleWindow() != GetForegroundWindow()) {}
-		} while (!EXIT_MENU);
+		} while (!EXIT_MENU && (timer += (dt = FPS + Wait(FPS))));
 		MineSweeper* Board = new MineSweeper(SelMines, SelDimensions);
 		delete Main;
 		system("CLS");
 		Board->InitializeBoard();
 		Board->ClearInputBuffer();
-		while (!Board->EXIT_MS && !EXIT_PROGRAM) {
+		while (!Board->EXIT_MS && !EXIT_PROGRAM && (timer += (dt = FPS + Wait(FPS)))) {
 			Board->DrawBoard();
 			Board->InputBoard();
 			Board->LogicBoard();
