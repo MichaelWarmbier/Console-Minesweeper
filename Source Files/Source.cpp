@@ -503,7 +503,7 @@ public:
 					if (distribution(generator) == 1 && MineSweep() != NumberOfMines) {
 						MapBottom[y][x] = 25;
 					}
-					else if (MapBottom[y][x] < 25 || MapBottom[y][x] > 33)
+					else if (MapBottom[y][x] != 25)
 						MapBottom[y][x] = 20;
 				}
 			}
@@ -526,9 +526,9 @@ public:
 		DeleteObject(bmap);
 	}
 	void SetupNumTiles() {
-		int MinesNearby = 0;
 		for (int y = 0; y < Dimensions; y++) {
 			for (int x = 0; x < Dimensions; x++) {
+				int MinesNearby = 0;
 				if (CheckTilePosition(x, y - 1) == 25)
 					MinesNearby++;
 				if (CheckTilePosition(x + 1, y - 1) == 25)
@@ -613,25 +613,25 @@ public:
 int main() {
 	system("Title Console Minesweeper");
 	system("color 70");
-	SetConsoleSize();
-	ShowConsoleCursor(false);
 	do {
 		Menu* Main = new Menu;
-		do {
+		while ((timer += (dt = FPS + Wait(FPS))) && !EXIT_MENU) {
 			Main->DrawMenu();
 			Main->InputMenu();
 			Main->LogicMenu();
+			SetConsoleSize();
 			while (GetConsoleWindow() != GetForegroundWindow()) {}
-		} while (!EXIT_MENU && (timer += (dt = FPS + Wait(FPS))));
+		}
 		MineSweeper* Board = new MineSweeper(SelMines, SelDimensions);
 		delete Main;
 		system("CLS");
 		Board->InitializeBoard();
 		Board->ClearInputBuffer();
-		while (!Board->EXIT_MS && !EXIT_PROGRAM && (timer += (dt = FPS + Wait(FPS)))) {
+		while ((timer += (dt = FPS + Wait(FPS))) && !EXIT_PROGRAM && !Board->EXIT_MS) {
 			Board->DrawBoard();
 			Board->InputBoard();
 			Board->LogicBoard();
+			SetConsoleSize();
 			while (GetConsoleWindow() != GetForegroundWindow()) {}
 		}
 		if (!Board->ForceReset)
