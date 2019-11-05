@@ -25,7 +25,7 @@ Inside the releases folder are installer(s). Within file are all dependencies ne
 
 ## File System
 
-* Source - All source .cpp/.h files, if any.
+* Source Files - All source .cpp/.h files, if any.
 
 * Sprite Sheet - Holds one file, the main sprite sheet used for the game.
 
