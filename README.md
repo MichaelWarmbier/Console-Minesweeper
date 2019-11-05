@@ -3,7 +3,7 @@
 
 ![image](https://user-images.githubusercontent.com/44079959/64381362-05102680-d001-11e9-8e60-8b7c178b8daf.png)
 
-#### This game is old. See: Tetris OR Pacman for Console Games made after I improved more!
+#### This game is old. See: Tetris OR Pacman for console games made after I improved more!
 
 ## Description
 
