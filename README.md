@@ -3,11 +3,6 @@
 
 ![image](https://user-images.githubusercontent.com/44079959/64381362-05102680-d001-11e9-8e60-8b7c178b8daf.png)
 
-
-### Tetris entirely redesigned using C++
-
-Tetris is the original mine puzzle game developed for Windows by Microsoft.
-
 #### This game is old. See: Tetris OR Pacman for Console Games made after I improved more!
 
 ## Description
