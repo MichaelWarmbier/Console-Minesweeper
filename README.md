@@ -4,34 +4,35 @@
 ![image](https://user-images.githubusercontent.com/44079959/64381362-05102680-d001-11e9-8e60-8b7c178b8daf.png)
 
 
-Minesweeper, redesigned for your console window!
+### Tetris entirely redesigned using C++
 
-Designed for Windows OS only.
+Tetris is the original mine puzzle game developed for Windows by Microsoft.
 
-## Version
+#### This game is old. See: Tetris OR Pacman for Console Games made after I improved more!
 
-Current Version: Version 1.0
+## Description
 
-## How To Install
-
-Installation can be done direction via the installers provided in the **Installers** folder. Alternatively, you can compile the code yourself and acompany the executable output with the sprite sheet. 
-
-If Windows prevents startup claiming to have protected your PC, please press more info and then Run Anyway to continue. This program was made with C++ and compiled using visual studio, it's external files include a .ico and .bmp file. 
-
-## Differences From Original
-
-The game functions the complete same as Minesweeper. 
-
-Cells are selected via keyboard input rather than the standard pointer. In addition, the game design has been altered for the sake of functionality and design.
+This version of Minesweeper is being developed using the standard libraries of C++ and the Windows.h header. Written and compiled in Visual Studio 2019. 
 
 ## Controls
 
-WSAD / Arrow Keys - Movement 
-F - Flag
-Enter - Reveal Cell
-R - Reset Board
-ESC - Exit Board
+Movement: WASD / Arrow Keys 
 
-## Instructions
+Flag: F
 
-Reveal each cell that does not contain a mine to win the game. Flag a cell that you think has a mine for future reference. The counter on the top left shows you the amount of mines and considers one found and decrements everytime you flag a spot. Each digit within a cell reprecents the number of adjacent mines. Try to beat your time using the timer on the top right. Reveal a mine and you lose!
+Select: Enter
+
+Return/Exit: Escape
+
+## Installation
+
+Inside the releases folder are installer(s). Within file are all dependencies necessary to run the game. (Note: Older versions may be missing some .dll files, download the Visual C++ Redstristributables to remedy this)
+
+## File System
+
+* Source - All source .cpp/.h files, if any.
+
+* Sprite Sheet - Holds one file, the main sprite sheet used for the game.
+
+* Releases - Contains installers.
+
