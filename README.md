@@ -3,11 +3,13 @@
 
 ![image](https://user-images.githubusercontent.com/44079959/64381362-05102680-d001-11e9-8e60-8b7c178b8daf.png)
 
-##### This program is has outdated code. Almost no organization exists, and it is all stored in one source.cpp file.
+##### The code on this project may need to be updated. Organization is left to a single file.
 
 ## Description
 
 This version of Minesweeper was developed using the standard libraries of C++ and the Windows.h header. Written and compiled in Visual Studio 2019. 
+
+This project was made to practice recursion.
 
 ## Controls
 
