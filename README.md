@@ -25,6 +25,8 @@ Return/Exit: Escape
 
 Inside the releases folder are installer(s). (Note: C++ Redistributables not included in installation. Necessary to run.)
 
+Alternatively, you could compile this by creating a new C++ project with the source files.
+
 ## File System
 
 * Source Files - All source .cpp/.h files, if any.
