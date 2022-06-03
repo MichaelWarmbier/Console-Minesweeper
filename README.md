@@ -23,14 +23,10 @@ Return/Exit: Escape
 
 ## Installation
 
-Inside the releases folder are installer(s). (Note: C++ Redistributables not included in installation. Necessary to run.)
-
-Alternatively, you could compile this by creating a new C++ project with the source files.
+Latest release can be [found here](https://github.com/MichaelWarmbier/Console-Minesweeper/releases/tag/v1.0) containing .rar file with all the necessary files. Does not come with the Visual C++ Redistributables necessary to run.
 
 ## File System
 
 * Source Files - All source .cpp/.h files, if any.
 
 * Sprite Sheet - Holds one file, the main sprite sheet used for the game.
-
-* Releases - Contains installers.
